@@ -28,6 +28,32 @@ func TestParseFile(t *testing.T) {
 	AssertParseFile(t, 400, 3000, edge{1, 2, 5}, edge{352, 400, -88}, "test/sample_input_2025_3a.txt")
 }
 
+func TestProcess10(t *testing.T) {
+	AssertProcess(t, 682, 40-9, "test/sample_input_2025_1.txt")
+	AssertProcess(t, 2180, 600-99, "test/sample_input_2025_2.txt")
+	AssertProcess(t, 19674, 3000-399, "test/sample_input_2025_3.txt")
+	AssertProcess(t, 2176, 600-99, "test/sample_input_2025_2a.txt")
+	AssertProcess(t, 19663, 3000-399, "test/sample_input_2025_3a.txt")
+}
+
+func AssertProcess(t *testing.T, w, k int, file string) {
+	source, err := os.Open(file)
+	if err != nil {
+		t.Error(err)
+	}
+	defer source.Close()
+
+	g, err := parse(source)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	w, edges := process(g)
+	assert.Equal(t, w, w)
+	assert.Equal(t, k, len(edges))
+}
+
 func AssertParseFile(t *testing.T, vertices, edges int, first, last edge, file string) {
 	source, err := os.Open(file)
 	if err != nil {
