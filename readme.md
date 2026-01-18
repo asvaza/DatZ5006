@@ -11,9 +11,13 @@ New!!! Description of the problem for Programming project is available for downl
 A couple of sample files of input data are available for testing purposes.
 
 The `sample_input_2025_1.txt` describes graph with 10 vertices and the "sum of difficulty levels" should be 682.
+
 The `sample_input_2025_2.txt` describes graph with 100 vertices and the "sum of difficulty levels" should be 2180.
+
 The `sample_input_2025_3.txt` describes graph with 400 vertices and the "sum of difficulty levels" should be 19674.
+
 The `sample_input_2025_2a.txt` describes graph with 100 vertices and the "sum of difficulty levels" should be 2176.
+
 The `sample_input_2025_3a.txt` describes graph with 400 vertices and the "sum of difficulty levels" should be 19663.
 
 Note that in general case correct solutions may have different sets of edges or even different number of edges in them.

@@ -17,8 +17,8 @@ type graph struct {
 }
 
 type edge struct {
-	a int
-	b int
+	A int
+	B int
 	w int
 }
 
@@ -52,7 +52,7 @@ func newUnionFind(n int) *unionFind {
 	return &unionFind{parent: parent}
 }
 
-func process(g *graph) (int, []edge) {
+func Process(g *graph) (int, []edge) {
 	uf := newUnionFind(g.length)
 
 	slices.SortFunc(g.edges, func(a, b edge) int {
@@ -62,7 +62,7 @@ func process(g *graph) (int, []edge) {
 	var feedback []edge
 	w := 0
 	for _, item := range g.edges {
-		if !uf.union(item.a-1, item.b-1) {
+		if !uf.union(item.A-1, item.B-1) {
 			w += item.w
 			feedback = append(feedback, item)
 		}
@@ -71,7 +71,7 @@ func process(g *graph) (int, []edge) {
 	return w, feedback
 }
 
-func parse(reader io.Reader) (*graph, error) {
+func Parse(reader io.Reader) (*graph, error) {
 	result := graph{}
 	i := 0
 	var a, b int
@@ -88,7 +88,7 @@ func parse(reader io.Reader) (*graph, error) {
 					if i == 0 {
 						result.length = value
 					} else {
-						result.edges = append(result.edges, edge{a: a, b: b, w: value})
+						result.edges = append(result.edges, edge{A: a, B: b, w: value})
 					}
 				case 1:
 					a = value

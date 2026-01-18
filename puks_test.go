@@ -43,13 +43,13 @@ func AssertProcess(t *testing.T, w, k int, file string) {
 	}
 	defer source.Close()
 
-	g, err := parse(source)
+	g, err := Parse(source)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	w, edges := process(g)
+	w, edges := Process(g)
 	assert.Equal(t, w, w)
 	assert.Equal(t, k, len(edges))
 }
@@ -61,7 +61,7 @@ func AssertParseFile(t *testing.T, vertices, edges int, first, last edge, file s
 	}
 	defer source.Close()
 
-	graph, err := parse(source)
+	graph, err := Parse(source)
 	if err != nil {
 		t.Error(err)
 		return
@@ -74,7 +74,7 @@ func AssertParseFile(t *testing.T, vertices, edges int, first, last edge, file s
 }
 
 func AssertParseText(t *testing.T, vertices, edges int, first, last edge, text string, failure string) {
-	graph, err := parse(strings.NewReader(text))
+	graph, err := Parse(strings.NewReader(text))
 	if err != nil {
 		if failure == "" {
 			t.Error(err)
