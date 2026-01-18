@@ -6,80 +6,62 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestTokenizerString(t *testing.T) {
-	AssertTokenizerText(t, []int{1, 2, 3, 4}, "1 2 3 4", "")
-	AssertTokenizerText(t, []int{1, 2, 3, -4}, "1\n2\n3\n-4", "")
-	AssertTokenizerText(t, []int{1, 2, 3, 4}, "1\t2\n3\r4", "")
-	AssertTokenizerText(t, []int{1, 2, 3, 4}, "1\r\n2\n\r3 4", "")
-	AssertTokenizerText(t, nil, "1 2 a 4", "Can not parse a")
-}
-
-func TestTokenizerFile(t *testing.T) {
-	AssertTokenizerFile(t, 121, []int{10, 1, 2, 69}, []int{6, 9, 10, -90}, "test/sample_input_2025_1.txt")
-	AssertTokenizerFile(t, 1801, []int{100, 1, 2, 15}, []int{10, 88, 100, -52}, "test/sample_input_2025_2.txt")
-	AssertTokenizerFile(t, 1801, []int{100, 1, 2, 15}, []int{10, 88, 100, -52}, "test/sample_input_2025_2a.txt")
-	AssertTokenizerFile(t, 9001, []int{400, 1, 2, 5}, []int{29, 352, 400, -88}, "test/sample_input_2025_3.txt")
-	AssertTokenizerFile(t, 9001, []int{400, 1, 2, 5}, []int{29, 352, 400, -88}, "test/sample_input_2025_3a.txt")
+func TestParseString(t *testing.T) {
+	AssertParseText(t, 1, 1, edge{2, 3, 4}, edge{2, 3, 4}, "1 2 3 4", "")
+	AssertParseText(t, 1, 1, edge{2, 3, -4}, edge{2, 3, -4}, "1\n2\n3\n-4", "")
+	AssertParseText(t, 1, 1, edge{2, 3, 4}, edge{2, 3, 4}, "1\t2\n3\r4", "")
+	AssertParseText(t, 1, 1, edge{2, 3, 4}, edge{2, 3, 4}, "1\r\n2\n\r3 4", "")
+	AssertParseText(t, 0, 0, edge{}, edge{}, "1 2 a 4", "Can not parse a")
+	AssertParseText(t, 0, 0, edge{}, edge{}, "0", "")
+	AssertParseText(t, 1, 1, edge{}, edge{}, "1 2", "Wrong number of integers (2) for graph")
+	AssertParseText(t, 1, 1, edge{}, edge{}, "1 2 3", "Wrong number of integers (3) for graph")
 }
 
 func TestParseFile(t *testing.T) {
-	source, err := os.Open("test/sample_input_2025_1.txt")
-	if err != nil {
-		t.Error(err)
-	}
-	defer source.Close()
-	graph, err := parse(source)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, 10, graph.length)
-	assert.Equal(t, 40, len(graph.edges))
-	assert.Equal(t, edge{1, 2, 69}, graph.edges[0])
-	assert.Equal(t, edge{9, 10, -90}, graph.edges[len(graph.edges)-1])
+	AssertParseFile(t, 10, 40, edge{1, 2, 69}, edge{9, 10, -90}, "test/sample_input_2025_1.txt")
+	AssertParseFile(t, 100, 600, edge{1, 2, 15}, edge{88, 100, -52}, "test/sample_input_2025_2.txt")
+	AssertParseFile(t, 100, 600, edge{1, 2, 15}, edge{88, 100, -52}, "test/sample_input_2025_2a.txt")
+	AssertParseFile(t, 400, 3000, edge{1, 2, 5}, edge{352, 400, -88}, "test/sample_input_2025_3.txt")
+	AssertParseFile(t, 400, 3000, edge{1, 2, 5}, edge{352, 400, -88}, "test/sample_input_2025_3a.txt")
 }
 
-func AssertTokenizerFile(t *testing.T, length int, start []int, end []int, file string) {
+func AssertParseFile(t *testing.T, vertices, edges int, first, last edge, file string) {
 	source, err := os.Open(file)
 	if err != nil {
 		t.Error(err)
 	}
 	defer source.Close()
 
-	stream := make(chan int)
-	go func() {
-		if err := tokenize(source, stream); err != nil {
-			t.Error(err)
-		}
-		close(stream)
-	}()
-
-	actual := []int{}
-	for item := range stream {
-		actual = append(actual, item)
+	graph, err := parse(source)
+	if err != nil {
+		t.Error(err)
+		return
 	}
-	assert.Equal(t, length, len(actual))
-	assert.Equal(t, start, actual[:4])
-	assert.Equal(t, end, actual[len(actual)-4:])
+	require.NotNil(t, graph)
+	assert.Equal(t, vertices, graph.length)
+	assert.Equal(t, edges, len(graph.edges))
+	assert.Equal(t, first, graph.edges[0])
+	assert.Equal(t, last, graph.edges[len(graph.edges)-1])
 }
 
-func AssertTokenizerText(t *testing.T, expected []int, text string, failure string) {
-	actual := []int{}
-	stream := make(chan int)
-	go func() {
-		for item := range stream {
-			actual = append(actual, item)
-		}
-		assert.Equal(t, expected, actual)
-	}()
-
-	if err := tokenize(strings.NewReader(text), stream); err != nil {
+func AssertParseText(t *testing.T, vertices, edges int, first, last edge, text string, failure string) {
+	graph, err := parse(strings.NewReader(text))
+	if err != nil {
 		if failure == "" {
 			t.Error(err)
 		} else {
 			assert.Equal(t, failure, err.Error())
 		}
+		return
 	}
-	close(stream)
+	require.NotNil(t, graph)
+	assert.Equal(t, vertices, graph.length)
+	assert.Equal(t, edges, len(graph.edges))
+	if len(graph.edges) > 0 {
+		assert.Equal(t, first, graph.edges[0])
+		assert.Equal(t, last, graph.edges[len(graph.edges)-1])
+	}
 }
