@@ -30,7 +30,7 @@ func (uf *unionFind) find(i int) int {
 	if uf.parent[i] == i {
 		return i
 	}
-	uf.parent[i] = uf.find(uf.parent[i])
+	uf.parent[i] = uf.find(uf.parent[i]) // optimizē nākamo izsaukumu
 	return uf.parent[i]
 }
 
@@ -55,12 +55,17 @@ func newUnionFind(n int) *unionFind {
 func Process(g *graph) (int, []edge) {
 	uf := newUnionFind(g.length)
 
+	// Golang lieto pdqsort (Pattern-defeating Quicksort) kas visos gadījumos nodrošina O(n logn)
+	// https://arxiv.org/pdf/2106.05123
+	// https://github.com/orlp/pdqsort
+	// https://go.dev/src/slices/zsortanyfunc.go
 	slices.SortFunc(g.edges, func(a, b edge) int {
 		return cmp.Compare(b.w, a.w)
 	})
 
 	var feedback []edge
 	w := 0
+	// O(n m)
 	for _, item := range g.edges {
 		if !uf.union(item.A-1, item.B-1) {
 			w += item.w
